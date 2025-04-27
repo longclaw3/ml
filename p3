@@ -1,0 +1,53 @@
+ import pandas as pd
+ from sklearn.model_selection import train_test_split
+ from sklearn.tree import DecisionTreeClassifier
+ from sklearn.metrics import confusion_matrix, accuracy_score, precision_score,␣
+ ↪recall_score
+ from sklearn.preprocessing import LabelEncoder
+  url = "https://archive.ics.uci.edu/ml/machine-learning-databases/zoo/zoo.data"
+ column_names = [
+ 'animal_name', 'hair', 'feathers', 'eggs', 'milk', 'airborne', 'aquatic',␣
+ ↪'predator',
+ 'toothed', 'backbone', 'breathes', 'venomous', 'fins', 'legs', 'tail',␣
+ ↪'domestic',
+ 'catsize', 'class_type'
+ ]
+ zoo_df = pd.read_csv(url, names=column_names)
+  X = zoo_df.drop(['animal_name', 'class_type'], axis=1)
+ y = zoo_df['class_type']
+  label_encoder = LabelEncoder()
+ y_encoded = label_encoder.fit_transform(y)
+ X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.3, random_state=42)
+ dt_classifier = DecisionTreeClassifier(random_state=42)
+ dt_classifier.fit(X_train, y_train)
+ y_pred = dt_classifier.predict(X_test)
+  conf_matrix = confusion_matrix(y_test, y_pred)
+ print("Confusion Matrix:")
+ print(conf_matrix)
+ print("\n")
+  num_classes = len(label_encoder.classes_)
+ class_names = label_encoder.classes_
+  print("Class-wise Metrics:")
+ for i in range(num_classes):
+    # Extract true positives, false positives, and false negatives for the␣current class
+    tp = conf_matrix[i, i]
+    fp = conf_matrix[:, i].sum()- tp
+    fn = conf_matrix[i, :].sum()- tp
+    # Calculate accuracy for the current class
+    # Accuracy = (TP + TN) / (TP + TN + FP + FN)
+    # To calculate TN for a multi-class problem, we consider all other classes
+    tn = conf_matrix.sum()- tp- fp- fn
+    accuracy = (tp + tn) / (conf_matrix.sum()) if conf_matrix.sum() > 0 else 0
+    # Calculate precision for the current class
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    # Calculate recall for the current class
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    print(f"Class: {class_names[i]}")
+    print(f" Accuracy: {accuracy:.4f}")
+    print(f" Precision: {precision:.4f}")
+    print(f" Recall:
+    {recall:.4f}")
+    print("-" * 20)
+ # Calculate overall accuracy
+ overall_accuracy = accuracy_score(y_test, y_pred)
+ print(f"\nOverall Accuracy: {overall_accuracy:.4f}")
