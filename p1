@@ -15,4 +15,4 @@ import numpy as np
  print(f"Min-Max Normalized Data: {normalized_data_minmax.flatten()}")
  scaler_standard = StandardScaler()
  standardized_data = scaler_standard.fit_transform(data.reshape(-1, 1))
- print(f"Standardized Data: {standardized_data.flatten()}
+ print(f"Standardized Data: {standardized_data.flatten()}")
