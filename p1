@@ -1,4 +1,6 @@
-import numpy as np
+def p1():
+    print('''
+ import numpy as np
  from scipy import stats
  from sklearn.preprocessing import MinMaxScaler, StandardScaler
  data = np.array([115.3, 195.5, 120.5, 110.2, 90.4, 105.6, 110.9, 116.3, 122.3,125.4])
@@ -16,3 +18,252 @@ import numpy as np
  scaler_standard = StandardScaler()
  standardized_data = scaler_standard.fit_transform(data.reshape(-1, 1))
  print(f"Standardized Data: {standardized_data.flatten()}")
+ ''')
+
+
+
+def p2():
+    print('''
+import pandas as pd
+df = pd.read_csv("iris.csv")
+
+# Prepare X and Y
+X = df.values[:,:-1]
+Y = df.values[:,-1]
+
+df.head()
+df
+X_standard = X - X.mean()
+X_standard
+type(X_standard)
+Y_standard = Y
+Y_standard
+type(Y_standard)
+cov = np.cov(X.T)   # .T b/c numpy wants varibles along rows rather than down columns?
+print("covariance matrix =\n",cov)
+from numpy import linalg as LA
+lambdas, vs = LA.eig(cov)
+lambdas
+vs
+lambdas
+#sort the eigenvalues in descending order
+sorted_index = np.argsort(lambdas)[::-1]
+sorted_index
+sorted_eigenvalue = lambdas[sorted_index]
+sorted_eigenvalue
+sorted_eigenvectors = vs[:,sorted_index]
+sorted_eigenvectors
+
+n_components = 2 #you can select any number of components.
+eigenvector_subset = sorted_eigenvectors[:,0:n_components]
+eigenvector_subset
+#Transform the data
+X_reduced = np.dot(eigenvector_subset.transpose(),X_standard.transpose()).transpose()
+print("Information/Variance in PC1",(sorted_eigenvalue[0]/(sorted_eigenvalue[0]+sorted_eigenvalue[1]))*100)
+X_reduced
+import matplotlib.pyplot as plt
+plt.xlabel('Principal Component - 1',fontsize=20)
+plt.ylabel('Principal Component - 2',fontsize=20)
+plt.scatter(X_reduced[:,0:1],X_reduced[:,-1],c=Y)
+plt.show()
+''')
+
+
+
+def p3():
+    print('''
+ import pandas as pd
+ from sklearn.model_selection import train_test_split
+ from sklearn.tree import DecisionTreeClassifier
+ from sklearn.metrics import confusion_matrix, accuracy_score, precision_score,␣
+ ↪recall_score
+ from sklearn.preprocessing import LabelEncoder
+  url = "https://archive.ics.uci.edu/ml/machine-learning-databases/zoo/zoo.data"
+ column_names = [
+ 'animal_name', 'hair', 'feathers', 'eggs', 'milk', 'airborne', 'aquatic',␣
+ ↪'predator',
+ 'toothed', 'backbone', 'breathes', 'venomous', 'fins', 'legs', 'tail',␣
+ ↪'domestic',
+ 'catsize', 'class_type'
+ ]
+ zoo_df = pd.read_csv(url, names=column_names)
+  X = zoo_df.drop(['animal_name', 'class_type'], axis=1)
+ y = zoo_df['class_type']
+  label_encoder = LabelEncoder()
+ y_encoded = label_encoder.fit_transform(y)
+ X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.3, random_state=42)
+ dt_classifier = DecisionTreeClassifier(random_state=42)
+ dt_classifier.fit(X_train, y_train)
+ y_pred = dt_classifier.predict(X_test)
+  conf_matrix = confusion_matrix(y_test, y_pred)
+ print("Confusion Matrix:")
+ print(conf_matrix)
+ print("\n")
+  num_classes = len(label_encoder.classes_)
+ class_names = label_encoder.classes_
+  print("Class-wise Metrics:")
+ for i in range(num_classes):
+    # Extract true positives, false positives, and false negatives for the␣current class
+    tp = conf_matrix[i, i]
+    fp = conf_matrix[:, i].sum()- tp
+    fn = conf_matrix[i, :].sum()- tp
+    # Calculate accuracy for the current class
+    # Accuracy = (TP + TN) / (TP + TN + FP + FN)
+    # To calculate TN for a multi-class problem, we consider all other classes
+    tn = conf_matrix.sum()- tp- fp- fn
+    accuracy = (tp + tn) / (conf_matrix.sum()) if conf_matrix.sum() > 0 else 0
+    # Calculate precision for the current class
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    # Calculate recall for the current class
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    print(f"Class: {class_names[i]}")
+    print(f" Accuracy: {accuracy:.4f}")
+    print(f" Precision: {precision:.4f}")
+    print(f" Recall:
+    {recall:.4f}")
+    print("-" * 20)
+ # Calculate overall accuracy
+ overall_accuracy = accuracy_score(y_test, y_pred)
+ print(f"\nOverall Accuracy: {overall_accuracy:.4f}")
+ ''')
+
+
+
+def p4():
+    print('''
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+# Load dataset
+file_path = "/content/Food-Truck(For Linear Regression Program).csv"
+df = pd.read_csv(file_path, header=None)
+df.columns = ["Population", "Profit"]
+# Extract values
+X = df["Population"].values
+y = df["Profit"].values
+n = len(X)  # Number of data points
+# Scatter plot
+plt.figure(figsize=(6, 4))
+plt.scatter(X, y, alpha=0.7)
+plt.xlabel("Population (in 10,000s)")
+plt.ylabel("Profit (in $10,000s)")
+plt.title("Scatter Plot of Population vs. Profit")
+plt.show()
+# Compute means
+X_mean = sum(X) / n
+y_mean = sum(y) / n
+# Compute slope (b1) and intercept (b0) manually
+num = sum((X - X_mean) * (y - y_mean))  # Numerator for b1
+den = sum((X - X_mean) ** 2)  # Denominator for b1
+b1 = num / den
+b0 = y_mean - (b1 * X_mean)
+# Compute predictions
+y_pred = np.array([b0 + b1 * x for x in X])
+# Compute Cost Function (Mean Squared Error / 2)
+cost = sum((y - y_pred) ** 2) / (n)
+# Compute SSE, SSR, SST manually
+SSE = sum((y - y_pred) ** 2)  # Sum of Squared Errors
+SSR = sum((y_pred - y_mean) ** 2)  # Regression Sum of Squares
+SST = sum((y - y_mean) ** 2)  # Total Sum of Squares
+R2 = SSR / SST  # R-squared
+# Print results
+print(f"Intercept (b0): {b0}, Slope (b1): {b1}")
+print(f"Cost: {cost}")
+print(f"SSE: {SSE}")
+print(f"SSR: {SSR}")
+print(f"SST: {SST}")
+print(f"R2 Score: {R2}")
+# Scatter plot
+plt.figure(figsize=(6, 4))
+plt.scatter(X, y, alpha=0.7)
+plt.plot(X,y_pred, color="red", label="Regression Line")
+plt.xlabel("Population (in 10,000s)")
+plt.ylabel("Profit (in $10,000s)")
+plt.title("Scatter Plot of Population vs. Profit")
+plt.show()
+''')
+
+
+
+def p5():
+    print('''
+ import pandas as pd
+ import numpy as np
+ from sklearn.model_selection import train_test_split
+ from sklearn.naive_bayes import GaussianNB
+ from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score, roc_curve, auc
+ import matplotlib.pyplot as plt
+ from sklearn.model_selection import validation_curve
+ # Example: Load your dataset
+ # df = pd.read_csv("covid_dataset.csv")
+ # Synthetic Data Example (replace with your dataset)
+ # Assuming 'target' is the column representing if the patient is COVID positive or not (1 = positive, 0 = negative)
+ data = {
+ 'age': np.random.randint(20, 80, 1000),
+ 'fever': np.random.choice([0, 1], size=1000), # 0 = no fever, 1 = has fever
+ 'cough': np.random.choice([0, 1], size=1000), # 0 = no cough, 1 = has cough
+ 'fatigue': np.random.choice([0, 1], size=1000), # 0 = no fatigue, 1 = has fatigue
+ 'shortness_of_breath': np.random.choice([0, 1], size=1000), # 0 = no shortness, 1 = has shortness
+ 'target': np.random.choice([0, 1], size=1000)= COVID Positive
+ }
+ df = pd.DataFrame(data)
+ # Features and target
+ X = df.drop('target', axis=1)
+ y = df['target']
+ # Split the data into 80% training and 20% testing
+ # Target: 0 = No COVID, 1␣
+ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,random_state=42
+ nb_classifier = GaussianNB()
+ # Train the model
+ nb_classifier.fit(X_train, y_train)
+ # Predict on the test set
+ y_pred = nb_classifier.predict(X_test)
+  accuracy = accuracy_score(y_test, y_pred)
+ print(f"Accuracy: {accuracy:.4f}")
+ # Precision
+ precision = precision_score(y_test, y_pred)
+ print(f"Precision: {precision:.4f}")
+ # Recall
+ recall = recall_score(y_test, y_pred)
+ print(f"Recall: {recall:.4f}")
+ # F1 Score
+ f1 = f1_score(y_test, y_pred)
+ print(f"F1 Score: {f1:.4f}")
+ # ROC Curve
+ # Plotting ROC Curve
+ fpr, tpr, thresholds = roc_curve(y_test, nb_classifier.predict_proba(X_test)[:,1])
+ roc_auc = auc(fpr, tpr)
+ print(f"ROC AUC: {roc_auc:.4f}")
+ plt.figure()
+ plt.plot(fpr, tpr, color='blue', label=f'ROC curve (area = {roc_auc:.4f})')
+ plt.plot([0, 1], [0, 1], color='gray', linestyle='--')
+ plt.xlabel('False Positive Rate')
+ plt.ylabel('True Positive Rate')
+ plt.title('Receiver Operating Characteristic (ROC) Curve')
+ plt.legend(loc='lower right')
+ plt.show()
+  param_range = np.logspace(-9, 0, 10)
+ train_scores, test_scores = validation_curve(
+ GaussianNB(), X_train, y_train, param_name="var_smoothing",␣
+ ↪param_range=param_range,
+ scoring="accuracy", n_jobs=-1, cv=5
+ )
+ # Calculate mean and std for plotting
+ train_mean = np.mean(train_scores, axis=1)
+ train_std = np.std(train_scores, axis=1)
+ test_mean = np.mean(test_scores, axis=1)
+ test_std = np.std(test_scores, axis=1)
+ # Plot
+ plt.figure()
+ plt.semilogx(param_range, train_mean, label="Training score", color="blue")
+ plt.fill_between(param_range, train_mean- train_std, train_mean + train_std,␣
+ ↪color="blue", alpha=0.2)
+ plt.semilogx(param_range, test_mean, label="Cross-validation score",
+ ↪color="green")
+ plt.fill_between(param_range, test_mean- test_std, test_mean + test_std,
+ ↪color="green", alpha=0.2)
+ plt.title("Validation Curve (Naive Bayes)")
+ plt.xlabel("Var_smoothing")
+ plt.ylabel("Accuracy")
+ plt.legend(loc="best")
+ plt.show() ''')
